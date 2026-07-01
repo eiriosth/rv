@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rettighetsveiviser - Tannhelsetjenesten i Telemark</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f4f6f7;
+    color: #1a1a1a;
+  }
+
+  .rv-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+  }
+
+  .rv-page-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #005260;
+    margin: 0 0 0.25rem 0;
+  }
+
+  .rv-page-subtitle {
+    font-size: 0.95rem;
+    color: #555;
+    margin: 0 0 2rem 0;
+    line-height: 1.5;
+  }
+
+  .rv-wizard {
+    font-family: inherit;
+    max-width: 720px;
+    color: #1a1a1a;
+  }
+
+  .rv-wizard * {
+    box-sizing: border-box;
+  }
+
+  .rv-card {
+    border: 2px solid #005260;
+    border-radius: 16px;
+    padding: 2rem 2.25rem;
+    background: #fff;
+    position: relative;
+    box-shadow: 0 2px 12px rgba(0, 82, 96, 0.08);
+  }
+
+  .rv-progress {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .rv-progress-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #CCDCDF;
+    transition: background 0.3s ease;
+  }
+
+  .rv-progress-dot.active { background: #005260; }
+  .rv-progress-dot.completed { background: #1F9562; }
+
+  .rv-step-label {
+    font-size: 0.8rem;
+    color: #005260;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.5rem;
+  }
+
+  .rv-question {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+    color: #1a1a1a;
+    line-height: 1.4;
+  }
+
+  .rv-hint {
+    font-size: 0.9rem;
+    color: #555;
+    margin: -0.75rem 0 1.25rem 0;
+    line-height: 1.5;
+  }
+
+  .rv-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .rv-option {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.8rem 1rem;
+    border: 2px solid #E5EEEF;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: #fff;
+    line-height: 1.4;
+    font-size: 0.93rem;
+  }
+
+  .rv-option:hover {
+    border-color: #80A8AF;
+    background: #F7FAFA;
+  }
+
+  .rv-option:focus-within {
+    outline: 3px solid #005260;
+    outline-offset: 2px;
+    border-color: #005260;
+  }
+
+  .rv-option.selected {
+    border-color: #005260;
+    background: #E5EEEF;
+  }
+
+  .rv-option input[type="radio"] {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .rv-radio {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    border-radius: 50%;
+    border: 2px solid #80A8AF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+  }
+
+  .rv-option.selected .rv-radio { border-color: #005260; }
+
+  .rv-option.selected .rv-radio::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #005260;
+  }
+
+  .rv-select {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    border: 2px solid #E5EEEF;
+    border-radius: 10px;
+    font-size: 0.93rem;
+    font-family: inherit;
+    color: #1a1a1a;
+    background: #fff;
+    margin-bottom: 1.5rem;
+  }
+
+  .rv-select:focus {
+    outline: 3px solid #005260;
+    outline-offset: 2px;
+    border-color: #005260;
+  }
+
+  .rv-buttons {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .rv-btn {
+    padding: 0.7rem 1.5rem;
+    border-radius: 10px;
+    font-size: 0.93rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s ease;
+  }
+
+  .rv-btn:focus-visible {
+    outline: 3px solid #005260;
+    outline-offset: 2px;
+  }
+
+  .rv-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .rv-btn-primary { background: #005260; color: #fff; }
+  .rv-btn-primary:hover:not(:disabled) { background: #196370; }
+
+  .rv-btn-secondary { background: #E5EEEF; color: #005260; }
+  .rv-btn-secondary:hover { background: #CCDCDF; }
+
+  .rv-btn-restart {
+    background: transparent;
+    color: #005260;
+    border: 2px solid #CCDCDF;
+  }
+  .rv-btn-restart:hover { border-color: #005260; }
+
+  .rv-result-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #E5EEEF;
+  }
+
+  .rv-result-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+
+  .rv-result-icon.green { background: #E9F4EF; color: #1F9562; }
+  .rv-result-icon.yellow { background: #F6F5EB; color: #A5983A; }
+  .rv-result-icon.gray { background: #F2F2F2; color: #7B7B7A; }
+
+  .rv-result-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a1a1a;
+  }
+
+  .rv-result-body {
+    line-height: 1.7;
+    font-size: 0.93rem;
+  }
+
+  .rv-result-body p { margin: 0 0 0.75rem 0; }
+  .rv-result-body strong { color: #005260; }
+
+  .rv-result-section {
+    background: #F7FAFA;
+    border-left: 3px solid #005260;
+    padding: 1rem 1.25rem;
+    margin: 1rem 0;
+    border-radius: 0 10px 10px 0;
+  }
+
+  .rv-result-section p { margin: 0 0 0.5rem 0; }
+  .rv-result-section p:last-child { margin-bottom: 0; }
+
+  .rv-note {
+    background: #F6F5EB;
+    border-left: 3px solid #A5983A;
+    padding: 0.75rem 1rem;
+    margin: 1rem 0;
+    border-radius: 0 10px 10px 0;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+
+  .rv-disclaimer {
+    background: #F2F2F2;
+    border-left: 3px solid #7B7B7A;
+    padding: 0.75rem 1rem;
+    margin: 1.25rem 0 0 0;
+    border-radius: 0 10px 10px 0;
+    font-size: 0.83rem;
+    line-height: 1.6;
+    color: #555;
+  }
+
+  .rv-link-btn {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.65rem 1.25rem;
+    background: #005260;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: background 0.15s ease;
+  }
+
+  .rv-link-btn:hover { background: #196370; }
+
+  .rv-link-btn.rv-link-btn-outline {
+    background: transparent;
+    color: #005260;
+    border: 2px solid #005260;
+  }
+
+  .rv-link-btn.rv-link-btn-outline:hover { background: #E5EEEF; }
+
+  .rv-link-row {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+  }
+
+  .rv-helfo-toggle {
+    background: none;
+    border: none;
+    color: #005260;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 0.25rem 0;
+    text-decoration: underline;
+  }
+
+  .rv-helfo-toggle:hover { color: #196370; }
+
+  .rv-helfo-list {
+    display: none;
+    margin: 0.75rem 0 0 0;
+    padding: 0 0 0 1.25rem;
+    font-size: 0.88rem;
+    line-height: 1.7;
+  }
+
+  .rv-helfo-list.open { display: block; }
+
+  .rv-helfo-list li { margin-bottom: 0.2rem; }
+
+  .rv-step { display: none; }
+
+  .rv-step.active {
+    display: block;
+    animation: rvFadeIn 0.3s ease;
+  }
+
+  @keyframes rvFadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .rv-meta {
+    max-width: 720px;
+    margin: 1rem 0 0 0;
+    font-size: 0.78rem;
+    color: #7B7B7A;
+    line-height: 1.5;
+  }
+
+  .rv-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  @media (max-width: 600px) {
+    .rv-card { padding: 1.25rem; }
+    .rv-question { font-size: 1rem; }
+    .rv-page { padding: 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="rv-page">
+  <h1 class="rv-page-title">Rettighetsveiviser</h1>
+  <p class="rv-page-subtitle">Bruk veiviseren for å finne ut om pasienten har rett til gratis eller rabattert tannbehandling i den offentlige tannhelsetjenesten. Veiviseren tar nå også hensyn til bosted, opphold og opprinnelsesland.</p>
+
+  <div class="rv-wizard" id="rvWizard" role="region" aria-label="Rettighetsveiviser for tannhelsetjenesten">
+    <div id="rvLive" class="rv-sr-only" aria-live="polite" aria-atomic="true"></div>
+
+    <div class="rv-card">
+      <div class="rv-progress" id="rvProgress" role="progressbar" aria-label="Fremdrift i veiviseren"></div>
+
+      <!-- STEG 1: Alder -->
+      <div class="rv-step active" id="rvStep1" role="group" aria-labelledby="rvStep1Label rvStep1Q">
+        <div class="rv-step-label" id="rvStep1Label">Steg 1</div>
+        <div class="rv-question" id="rvStep1Q">Hvilken aldersgruppe tilhører pasienten?</div>
+        <div class="rv-options" role="radiogroup" aria-labelledby="rvStep1Q">
+          <label class="rv-option">
+            <input type="radio" name="rv-age" value="0-18" onchange="rvHandleRadio(this, 'age', '0-18')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Barn og unge 0–18 år</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-age" value="19-28" onchange="rvHandleRadio(this, 'age', '19-28')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Unge voksne 19–28 år</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-age" value="29+" onchange="rvHandleRadio(this, 'age', '29+')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Voksne 29 år eller eldre</span>
+          </label>
+        </div>
+        <div class="rv-buttons">
+          <button class="rv-btn rv-btn-primary" id="rvNext1" disabled onclick="rvAfterAge()">Neste steg</button>
+        </div>
+      </div>
+
+      <!-- STEG: Bosted -->
+      <div class="rv-step" id="rvStepBosatt" role="group" aria-labelledby="rvStepBosattLabel rvBosattQ">
+        <div class="rv-step-label" id="rvStepBosattLabel">Bosted</div>
+        <div class="rv-question" id="rvBosattQ">Er pasienten bosatt i Norge, med lovlig opphold?</div>
+        <p class="rv-hint">Dette gjelder fast opphold i Norge, ikke et kortere besøk som turist.</p>
+        <div class="rv-options" role="radiogroup" aria-labelledby="rvBosattQ">
+          <label class="rv-option">
+            <input type="radio" name="rv-bosatt" value="ja" onchange="rvHandleRadio(this, 'bosattStatus', 'ja')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Ja, pasienten er bosatt i Norge</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-bosatt" value="nei" onchange="rvHandleRadio(this, 'bosattStatus', 'nei')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Nei, pasienten er på besøk eller bor i utlandet</span>
+          </label>
+        </div>
+        <div class="rv-buttons">
+          <button class="rv-btn rv-btn-secondary" onclick="rvGoBack()">Tilbake</button>
+          <button class="rv-btn rv-btn-primary" id="rvNextBosatt" disabled onclick="rvAfterBosatt()">Neste steg</button>
+        </div>
+      </div>
+
+      <!-- STEG: Opprinnelsesland -->
+      <div class="rv-step" id="rvStepLand" role="group" aria-labelledby="rvStepLandLabel rvLandQ">
+        <div class="rv-step-label" id="rvStepLandLabel">Opprinnelsesland</div>
+        <div class="rv-question" id="rvLandQ">Hvilket land kommer pasienten fra?</div>
+        <p class="rv-hint">Dette avgjør om pasienten omfattes av avtaler om gjensidige helsetjenester. Velg "Annet land" hvis landet ikke står i listen.</p>
+        <select class="rv-select" id="rvLandSelect" aria-labelledby="rvLandQ" onchange="rvHandleLand(this.value)">
+          <option value="">Velg land...</option>
+          <option value="Belgia">Belgia</option>
+          <option value="Bosnia-Hercegovina">Bosnia-Hercegovina</option>
+          <option value="Bulgaria">Bulgaria</option>
+          <option value="Danmark">Danmark</option>
+          <option value="Estland">Estland</option>
+          <option value="Finland">Finland</option>
+          <option value="Frankrike">Frankrike</option>
+          <option value="Hellas">Hellas</option>
+          <option value="Irland">Irland</option>
+          <option value="Island">Island</option>
+          <option value="Italia">Italia</option>
+          <option value="Kroatia">Kroatia</option>
+          <option value="Kypros">Kypros</option>
+          <option value="Latvia">Latvia</option>
+          <option value="Liechtenstein">Liechtenstein</option>
+          <option value="Litauen">Litauen</option>
+          <option value="Luxembourg">Luxembourg</option>
+          <option value="Malta">Malta</option>
+          <option value="Nederland">Nederland</option>
+          <option value="Polen">Polen</option>
+          <option value="Portugal">Portugal</option>
+          <option value="Romania">Romania</option>
+          <option value="Slovakia">Slovakia</option>
+          <option value="Slovenia">Slovenia</option>
+          <option value="Spania">Spania</option>
+          <option value="Storbritannia">Storbritannia</option>
+          <option value="Sveits">Sveits</option>
+          <option value="Sverige">Sverige</option>
+          <option value="Tsjekkia">Tsjekkia</option>
+          <option value="Tyskland">Tyskland</option>
+          <option value="Ungarn">Ungarn</option>
+          <option value="Østerrike">Østerrike</option>
+          <option value="Australia">Australia</option>
+          <option value="Canada">Canada</option>
+          <option value="Chile">Chile</option>
+          <option value="India">India</option>
+          <option value="Israel">Israel</option>
+          <option value="Montenegro">Montenegro</option>
+          <option value="Serbia">Serbia</option>
+          <option value="Tyrkia">Tyrkia</option>
+          <option value="USA">USA</option>
+        </select>
+        <button type="button" class="rv-option" id="rvLandNorgeBtn" onclick="rvSelectNorge()" style="width:100%; text-align:left; margin-bottom:0.5rem; font-weight:600;">
+          Norge
+        </button>
+        <button type="button" class="rv-option" id="rvLandAnnetBtn" onclick="rvSelectAnnetLand()" style="width:100%; text-align:left; margin-bottom:1.5rem; font-weight:600;">
+          Landet står ikke i listen over
+        </button>
+        <div class="rv-buttons">
+          <button class="rv-btn rv-btn-secondary" onclick="rvGoBack()">Tilbake</button>
+          <button class="rv-btn rv-btn-primary" id="rvNextLand" disabled onclick="rvAfterLand()">Neste steg</button>
+        </div>
+      </div>
+
+      <!-- STEG: Botid -->
+      <div class="rv-step" id="rvStepBotid" role="group" aria-labelledby="rvStepBotidLabel rvBotidQ">
+        <div class="rv-step-label" id="rvStepBotidLabel">Botid</div>
+        <div class="rv-question" id="rvBotidQ">Har pasienten bodd sammenhengende i Norge i minst 5 år, eller har permanent oppholdstillatelse?</div>
+        <p class="rv-hint">Bruk Fiks-Folkeregistersøk for å sjekke botid hvis du er usikker. Spør en kollega hvis du ikke har tilgang selv.</p>
+        <div class="rv-options" role="radiogroup" aria-labelledby="rvBotidQ">
+          <label class="rv-option">
+            <input type="radio" name="rv-botid" value="ja" onchange="rvHandleRadio(this, 'botid', 'ja')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Ja, 5 år eller mer, eller permanent oppholdstillatelse</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-botid" value="nei" onchange="rvHandleRadio(this, 'botid', 'nei')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Nei, under 5 år</span>
+          </label>
+        </div>
+        <div class="rv-buttons">
+          <button class="rv-btn rv-btn-secondary" onclick="rvGoBack()">Tilbake</button>
+          <button class="rv-btn rv-btn-primary" id="rvNextBotid" disabled onclick="rvAfterBotid()">Neste steg</button>
+        </div>
+      </div>
+
+      <!-- STEG 2: Livssituasjon (29+) -->
+      <div class="rv-step" id="rvStep2" role="group" aria-labelledby="rvStep2Label rvStep2Q">
+        <div class="rv-step-label" id="rvStep2Label">Livssituasjon</div>
+        <div class="rv-question" id="rvStep2Q">Gjelder noen av disse situasjonene for pasienten?</div>
+        <div class="rv-options" role="radiogroup" aria-labelledby="rvStep2Q">
+          <label class="rv-option">
+            <input type="radio" name="rv-situation" value="institusjon" onchange="rvHandleRadio(this, 'situation', 'institusjon')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten bor på sykehjem eller i et bo- og behandlingssenter</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situation" value="hjemmesykepleie" onchange="rvHandleRadio(this, 'situation', 'hjemmesykepleie')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten mottar hjemmesykepleie</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situation" value="utviklingshemming" onchange="rvHandleRadio(this, 'situation', 'utviklingshemming')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten har en diagnose som innebærer psykisk utviklingshemming</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situation" value="rus" onchange="rvHandleRadio(this, 'situation', 'rus')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten er i behandling for rusutfordringer</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situation" value="fengsel" onchange="rvHandleRadio(this, 'situation', 'fengsel')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten soner straff i fengsel eller bor i overgangsbolig</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situation" value="angst" onchange="rvHandleRadio(this, 'situation', 'angst')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten har alvorlig tannbehandlingsangst (tortur, overgrep eller odontofobi)</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situation" value="ingen" onchange="rvHandleRadio(this, 'situation', 'ingen')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Ingen av disse</span>
+          </label>
+        </div>
+        <div class="rv-buttons">
+          <button class="rv-btn rv-btn-secondary" onclick="rvGoBack()">Tilbake</button>
+          <button class="rv-btn rv-btn-primary" id="rvNext2" disabled onclick="rvAfterSituation()">Neste steg</button>
+        </div>
+      </div>
+
+      <!-- STEG 2b: Livssituasjon (19-28, kvalifisert) -->
+      <div class="rv-step" id="rvStep2b" role="group" aria-labelledby="rvStep2bLabel rvStep2bQ">
+        <div class="rv-step-label" id="rvStep2bLabel">Livssituasjon</div>
+        <div class="rv-question" id="rvStep2bQ">Gjelder noen av disse situasjonene for pasienten i tillegg?</div>
+        <p class="rv-hint">Pasienten har allerede rett til rabattert behandling (25 % av offentlige takster). Noen situasjoner gir rett til helt gratis behandling.</p>
+        <div class="rv-options" role="radiogroup" aria-labelledby="rvStep2bQ">
+          <label class="rv-option">
+            <input type="radio" name="rv-situation2b" value="institusjon" onchange="rvHandleRadio(this, 'situation2b', 'institusjon')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten bor på sykehjem eller i et bo- og behandlingssenter</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situation2b" value="hjemmesykepleie" onchange="rvHandleRadio(this, 'situation2b', 'hjemmesykepleie')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten mottar hjemmesykepleie</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situation2b" value="utviklingshemming" onchange="rvHandleRadio(this, 'situation2b', 'utviklingshemming')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten har en diagnose som innebærer psykisk utviklingshemming</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situation2b" value="rus" onchange="rvHandleRadio(this, 'situation2b', 'rus')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten er i behandling for rusutfordringer</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situation2b" value="fengsel" onchange="rvHandleRadio(this, 'situation2b', 'fengsel')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten soner straff i fengsel eller bor i overgangsbolig</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situation2b" value="angst" onchange="rvHandleRadio(this, 'situation2b', 'angst')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten har alvorlig tannbehandlingsangst (tortur, overgrep eller odontofobi)</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situation2b" value="ingen" onchange="rvHandleRadio(this, 'situation2b', 'ingen')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Ingen av disse</span>
+          </label>
+        </div>
+        <div class="rv-buttons">
+          <button class="rv-btn rv-btn-secondary" onclick="rvGoBack()">Tilbake</button>
+          <button class="rv-btn rv-btn-primary" id="rvNext2b" disabled onclick="rvAfterSituation2b()">Se resultat</button>
+        </div>
+      </div>
+
+      <!-- STEG: Livssituasjon (19-28, ikke kvalifisert via opphav/botid) -->
+      <div class="rv-step" id="rvStep2bForeign" role="group" aria-labelledby="rvStep2bForeignLabel rvStep2bForeignQ">
+        <div class="rv-step-label" id="rvStep2bForeignLabel">Livssituasjon</div>
+        <div class="rv-question" id="rvStep2bForeignQ">Gjelder noen av disse situasjonene for pasienten?</div>
+        <p class="rv-hint">Disse situasjonene kan gi rett til gratis tannbehandling, selv om pasienten ikke har rett til den vanlige rabattordningen.</p>
+        <div class="rv-options" role="radiogroup" aria-labelledby="rvStep2bForeignQ">
+          <label class="rv-option">
+            <input type="radio" name="rv-situationForeign" value="institusjon" onchange="rvHandleRadio(this, 'situation2b', 'institusjon')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten bor på sykehjem eller i et bo- og behandlingssenter</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situationForeign" value="hjemmesykepleie" onchange="rvHandleRadio(this, 'situation2b', 'hjemmesykepleie')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten mottar hjemmesykepleie</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situationForeign" value="utviklingshemming" onchange="rvHandleRadio(this, 'situation2b', 'utviklingshemming')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten har en diagnose som innebærer psykisk utviklingshemming</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situationForeign" value="rus" onchange="rvHandleRadio(this, 'situation2b', 'rus')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten er i behandling for rusutfordringer</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situationForeign" value="fengsel" onchange="rvHandleRadio(this, 'situation2b', 'fengsel')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten soner straff i fengsel eller bor i overgangsbolig</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situationForeign" value="angst" onchange="rvHandleRadio(this, 'situation2b', 'angst')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten har alvorlig tannbehandlingsangst (tortur, overgrep eller odontofobi)</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-situationForeign" value="ingen" onchange="rvHandleRadio(this, 'situation2b', 'ingen')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Ingen av disse</span>
+          </label>
+        </div>
+        <div class="rv-buttons">
+          <button class="rv-btn rv-btn-secondary" onclick="rvGoBack()">Tilbake</button>
+          <button class="rv-btn rv-btn-primary" id="rvNextSituationForeign" disabled onclick="rvAfterSituationForeign()">Se resultat</button>
+        </div>
+      </div>
+
+      <!-- STEG: EHIC -->
+      <div class="rv-step" id="rvStepEHIC" role="group" aria-labelledby="rvStepEHICLabel rvEHICQ">
+        <div class="rv-step-label" id="rvStepEHICLabel">Dokumentasjon</div>
+        <div class="rv-question" id="rvEHICQ">Kan pasienten fremvise gyldig europeisk helsetrygdkort (EHIC), eller britisk GHIC?</div>
+        <div class="rv-options" role="radiogroup" aria-labelledby="rvEHICQ">
+          <label class="rv-option">
+            <input type="radio" name="rv-ehic" value="ja" onchange="rvHandleRadio(this, 'ehic', 'ja')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Ja</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-ehic" value="nei" onchange="rvHandleRadio(this, 'ehic', 'nei')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Nei</span>
+          </label>
+        </div>
+        <div class="rv-buttons">
+          <button class="rv-btn rv-btn-secondary" onclick="rvGoBack()">Tilbake</button>
+          <button class="rv-btn rv-btn-primary" id="rvNextEHIC" disabled onclick="rvAfterEHIC()">Neste steg</button>
+        </div>
+      </div>
+
+      <!-- STEG: PRC -->
+      <div class="rv-step" id="rvStepPRC" role="group" aria-labelledby="rvStepPRCLabel rvPRCQ">
+        <div class="rv-step-label" id="rvStepPRCLabel">Dokumentasjon</div>
+        <div class="rv-question" id="rvPRCQ">Kan pasienten få utstedt og fremvise en PRC (Provisional Replacement Certificate) i stedet for europeisk helsetrygdkort?</div>
+        <div class="rv-options" role="radiogroup" aria-labelledby="rvPRCQ">
+          <label class="rv-option">
+            <input type="radio" name="rv-prc" value="ja" onchange="rvHandleRadio(this, 'prc', 'ja')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Ja</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-prc" value="nei" onchange="rvHandleRadio(this, 'prc', 'nei')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Nei</span>
+          </label>
+        </div>
+        <div class="rv-buttons">
+          <button class="rv-btn rv-btn-secondary" onclick="rvGoBack()">Tilbake</button>
+          <button class="rv-btn rv-btn-primary" id="rvNextPRC" disabled onclick="rvAfterPRC()">Se resultat</button>
+        </div>
+      </div>
+
+      <!-- Oppfølging: Institusjon, trinn 1 (type) -->
+      <div class="rv-step" id="rvStepInstType" role="group" aria-labelledby="rvStepInstTypeLabel rvInstTypeQ">
+        <div class="rv-step-label" id="rvStepInstTypeLabel">Oppfølgingsspørsmål</div>
+        <div class="rv-question" id="rvInstTypeQ">Er institusjonen offentlig eller har avtale med kommunen eller helseforetaket?</div>
+        <p class="rv-hint">Dette gjelder institusjoner i både kommunehelsetjenesten og spesialisthelsetjenesten. Er du i tvil, kontakt institusjonen og spør om de har avtale med kommunen eller helseforetaket.</p>
+        <div class="rv-options" role="radiogroup" aria-labelledby="rvInstTypeQ">
+          <label class="rv-option">
+            <input type="radio" name="rv-insttype" value="offentlig" onchange="rvHandleRadio(this, 'insttype', 'offentlig')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Ja, offentlig eller privat med avtale (kommunehelsetjenesten eller spesialisthelsetjenesten)</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-insttype" value="privat" onchange="rvHandleRadio(this, 'insttype', 'privat')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Nei, privat institusjon uten avtale</span>
+          </label>
+        </div>
+        <div class="rv-buttons">
+          <button class="rv-btn rv-btn-secondary" onclick="rvGoBack()">Tilbake</button>
+          <button class="rv-btn rv-btn-primary" id="rvNextInstType" disabled onclick="rvAfterInstType()">Neste steg</button>
+        </div>
+      </div>
+
+      <!-- Oppfølging: Institusjon, trinn 2 (varighet) -->
+      <div class="rv-step" id="rvStepInstTid" role="group" aria-labelledby="rvStepInstTidLabel rvInstTidQ">
+        <div class="rv-step-label" id="rvStepInstTidLabel">Oppfølgingsspørsmål</div>
+        <div class="rv-question" id="rvInstTidQ">Hvor lenge har pasienten bodd i institusjonen?</div>
+        <div class="rv-options" role="radiogroup" aria-labelledby="rvInstTidQ">
+          <label class="rv-option">
+            <input type="radio" name="rv-inst" value="over3" onchange="rvHandleRadio(this, 'inst', 'over3')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>3 måneder eller mer</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-inst" value="under3ment" onchange="rvHandleRadio(this, 'inst', 'under3ment')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Under 3 måneder, men oppholdet er ment å vare 3 måneder eller mer</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-inst" value="under3kort" onchange="rvHandleRadio(this, 'inst', 'under3kort')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Under 3 måneder, og oppholdet er ikke ment å vare så lenge</span>
+          </label>
+        </div>
+        <div class="rv-buttons">
+          <button class="rv-btn rv-btn-secondary" onclick="rvGoBack()">Tilbake</button>
+          <button class="rv-btn rv-btn-primary" id="rvNextInstTid" disabled onclick="rvShowResult()">Se resultat</button>
+        </div>
+      </div>
+
+      <!-- Oppfølging: Hjemmesykepleie, trinn 1 (type hjelp) -->
+      <div class="rv-step" id="rvStepHjemType" role="group" aria-labelledby="rvStepHjemTypeLabel rvHjemTypeQ">
+        <div class="rv-step-label" id="rvStepHjemTypeLabel">Oppfølgingsspørsmål</div>
+        <div class="rv-question" id="rvHjemTypeQ">Hva slags hjelp mottar pasienten i hjemmet?</div>
+        <p class="rv-hint">Mottar pasienten både hjemmesykepleie og praktisk bistand, velg hjemmesykepleie.</p>
+        <div class="rv-options" role="radiogroup" aria-labelledby="rvHjemTypeQ">
+          <label class="rv-option">
+            <input type="radio" name="rv-hjem" value="sykepleie" onchange="rvHandleRadio(this, 'hjem', 'sykepleie')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Hjemmesykepleie (sårbehandling, medisinhåndtering, psykiatrisk sykepleie e.l.)</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-hjem" value="praktisk" onchange="rvHandleRadio(this, 'hjem', 'praktisk')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Bare praktisk bistand (matlaging, handling, følge til avtaler, hjelp til å dusje)</span>
+          </label>
+        </div>
+        <div class="rv-buttons">
+          <button class="rv-btn rv-btn-secondary" onclick="rvGoBack()">Tilbake</button>
+          <button class="rv-btn rv-btn-primary" id="rvNextHjemType" disabled onclick="rvAfterHjemType()">Neste steg</button>
+        </div>
+      </div>
+
+      <!-- Oppfølging: Hjemmesykepleie, trinn 2 (frekvens) -->
+      <div class="rv-step" id="rvStepHjemFrekvens" role="group" aria-labelledby="rvStepHjemFrekvensLabel rvHjemFrekvensQ">
+        <div class="rv-step-label" id="rvStepHjemFrekvensLabel">Oppfølgingsspørsmål</div>
+        <div class="rv-question" id="rvHjemFrekvensQ">Mottar pasienten hjemmesykepleie ukentlig eller oftere?</div>
+        <div class="rv-options" role="radiogroup" aria-labelledby="rvHjemFrekvensQ">
+          <label class="rv-option">
+            <input type="radio" name="rv-hjemfrekvens" value="ukentlig" onchange="rvHandleRadio(this, 'hjemfrekvens', 'ukentlig')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Ja, ukentlig eller oftere</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-hjemfrekvens" value="sjeldnere" onchange="rvHandleRadio(this, 'hjemfrekvens', 'sjeldnere')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Nei, sjeldnere enn ukentlig</span>
+          </label>
+        </div>
+        <div class="rv-buttons">
+          <button class="rv-btn rv-btn-secondary" onclick="rvGoBack()">Tilbake</button>
+          <button class="rv-btn rv-btn-primary" id="rvNextHjemFrekvens" disabled onclick="rvAfterHjemFrekvens()">Neste steg</button>
+        </div>
+      </div>
+
+      <!-- Oppfølging: Hjemmesykepleie, trinn 3 (varighet) -->
+      <div class="rv-step" id="rvStepHjemTid" role="group" aria-labelledby="rvStepHjemTidLabel rvHjemTidQ">
+        <div class="rv-step-label" id="rvStepHjemTidLabel">Oppfølgingsspørsmål</div>
+        <div class="rv-question" id="rvHjemTidQ">Hvor lenge har pasienten mottatt hjemmesykepleie?</div>
+        <div class="rv-options" role="radiogroup" aria-labelledby="rvHjemTidQ">
+          <label class="rv-option">
+            <input type="radio" name="rv-hjemtid" value="over3" onchange="rvHandleRadio(this, 'hjemtid', 'over3')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>3 måneder eller mer</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-hjemtid" value="under3ment" onchange="rvHandleRadio(this, 'hjemtid', 'under3ment')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Under 3 måneder, men det er ment å vare 3 måneder eller mer</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-hjemtid" value="under3kort" onchange="rvHandleRadio(this, 'hjemtid', 'under3kort')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Under 3 måneder, og det er ikke ment å vare så lenge</span>
+          </label>
+        </div>
+        <div class="rv-buttons">
+          <button class="rv-btn rv-btn-secondary" onclick="rvGoBack()">Tilbake</button>
+          <button class="rv-btn rv-btn-primary" id="rvNextHjemTid" disabled onclick="rvShowResult()">Se resultat</button>
+        </div>
+      </div>
+
+      <!-- Oppfølging: Rus, trinn 1 (type tjeneste) -->
+      <div class="rv-step" id="rvStepRusType" role="group" aria-labelledby="rvStepRusTypeLabel rvRusTypeQ">
+        <div class="rv-step-label" id="rvStepRusTypeLabel">Oppfølgingsspørsmål</div>
+        <div class="rv-question" id="rvRusTypeQ">Hvilken type tjeneste mottar pasienten?</div>
+        <div class="rv-options" role="radiogroup" aria-labelledby="rvRusTypeQ">
+          <label class="rv-option">
+            <input type="radio" name="rv-rus" value="lar" onchange="rvHandleRadio(this, 'rus', 'lar')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>LAR-behandling (legemiddelassistert rehabilitering)</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-rus" value="avlastning" onchange="rvHandleRadio(this, 'rus', 'avlastning')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pårørendestøtte i form av avlastningstiltak</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-rus" value="assistanse" onchange="rvHandleRadio(this, 'rus', 'assistanse')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Personlig assistanse (praktisk bistand, opplæring eller støttekontakt)</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-rus" value="annet" onchange="rvHandleRadio(this, 'rus', 'annet')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Annen type behandling eller oppfølging</span>
+          </label>
+        </div>
+        <div class="rv-buttons">
+          <button class="rv-btn rv-btn-secondary" onclick="rvGoBack()">Tilbake</button>
+          <button class="rv-btn rv-btn-primary" id="rvNextRusType" disabled onclick="rvAfterRusType()">Neste steg</button>
+        </div>
+      </div>
+
+      <!-- Oppfølging: Rus, trinn 2 (varighet) -->
+      <div class="rv-step" id="rvStepRusTid" role="group" aria-labelledby="rvStepRusTidLabel rvRusTidQ">
+        <div class="rv-step-label" id="rvStepRusTidLabel">Oppfølgingsspørsmål</div>
+        <div class="rv-question" id="rvRusTidQ">Hvor lenge har pasienten mottatt tjenesten (eller hvor lenge er den ment å vare)?</div>
+        <div class="rv-options" role="radiogroup" aria-labelledby="rvRusTidQ">
+          <label class="rv-option">
+            <input type="radio" name="rv-rustid" value="over3" onchange="rvHandleRadio(this, 'rustid', 'over3')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>3 sammenhengende måneder eller mer</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-rustid" value="under3ment" onchange="rvHandleRadio(this, 'rustid', 'under3ment')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Under 3 måneder, men det er ment å vare 3 måneder eller mer</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-rustid" value="under3kort" onchange="rvHandleRadio(this, 'rustid', 'under3kort')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Under 3 måneder, og det er ikke ment å vare så lenge</span>
+          </label>
+        </div>
+        <div class="rv-buttons">
+          <button class="rv-btn rv-btn-secondary" onclick="rvGoBack()">Tilbake</button>
+          <button class="rv-btn rv-btn-primary" id="rvNextRusTid" disabled onclick="rvShowResult()">Se resultat</button>
+        </div>
+      </div>
+
+      <!-- Oppfølging: Fengsel -->
+      <div class="rv-step" id="rvStepFengsel" role="group" aria-labelledby="rvStepFengselLabel rvFengselQ">
+        <div class="rv-step-label" id="rvStepFengselLabel">Oppfølgingsspørsmål</div>
+        <div class="rv-question" id="rvFengselQ">Hva slags soning gjelder?</div>
+        <div class="rv-options" role="radiogroup" aria-labelledby="rvFengselQ">
+          <label class="rv-option">
+            <input type="radio" name="rv-fengsel" value="over3" onchange="rvHandleRadio(this, 'fengsel', 'over3')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten soner mer enn 3 måneder i fengsel eller overgangsbolig</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-fengsel" value="under3" onchange="rvHandleRadio(this, 'fengsel', 'under3')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten soner under 3 måneder</span>
+          </label>
+          <label class="rv-option">
+            <input type="radio" name="rv-fengsel" value="hjemme" onchange="rvHandleRadio(this, 'fengsel', 'hjemme')">
+            <span class="rv-radio" aria-hidden="true"></span>
+            <span>Pasienten har hjemmesoning</span>
+          </label>
+        </div>
+        <div class="rv-buttons">
+          <button class="rv-btn rv-btn-secondary" onclick="rvGoBack()">Tilbake</button>
+          <button class="rv-btn rv-btn-primary" id="rvNextFengsel" disabled onclick="rvShowResult()">Se resultat</button>
+        </div>
+      </div>
+
+      <!-- RESULTAT -->
+      <div class="rv-step" id="rvStepResult" role="status">
+        <div class="rv-step-label">Resultat</div>
+        <div id="rvResultContent"></div>
+        <div class="rv-buttons" style="margin-top:1.5rem;">
+          <button class="rv-btn rv-btn-restart" onclick="rvRestart()">Start på nytt</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <p class="rv-meta">Sist oppdatert 01.07.2026. Versjon 1.0. Fageier: EØ, TFK. Ved endringer i regelverket må innholdet oppdateres av fageier.</p>
+</div>
+
+<script>
+(function() {
+  var state = {};
+  var totalSteps = 2;
+  var currentStep = 1;
+  var rvHistory = [];
+  var currentStepId = 'rvStep1';
+
+  var innmeldingsUrl = 'https://telemarkfylke.no/no/meny/tjenester/tannhelse/for-samarbeidspartnere/';
+  var tooUrl = 'https://telemarkfylke.no/no/meny/tjenester/tannhelse/vare-behandlingstilbud/tannbehandlingsskrekk-too-team/';
+
+  var RV_EXEMPT_LAND = ["Belgia","Bosnia-Hercegovina","Bulgaria","Danmark","Estland","Finland","Frankrike","Hellas","Irland","Island","Italia","Kroatia","Kypros","Latvia","Liechtenstein","Litauen","Luxembourg","Malta","Nederland","Polen","Portugal","Romania","Slovakia","Slovenia","Spania","Storbritannia","Sveits","Sverige","Tsjekkia","Tyskland","Ungarn","Østerrike","Australia","Canada","Chile","India","Israel","Montenegro","Serbia","Tyrkia","USA"];
+
+  function announce(text) {
+    var live = document.getElementById('rvLive');
+    live.textContent = '';
+    setTimeout(function() { live.textContent = text; }, 100);
+  }
+
+  function updateProgress() {
+    var prog = document.getElementById('rvProgress');
+    var dots = '';
+    for (var i = 1; i <= totalSteps; i++) {
+      var cls = 'rv-progress-dot';
+      if (i < currentStep) cls += ' completed';
+      else if (i === currentStep) cls += ' active';
+      dots += '<span class="' + cls + '"></span>';
+    }
+    prog.innerHTML = dots;
+    prog.setAttribute('aria-valuenow', currentStep);
+    prog.setAttribute('aria-valuemax', totalSteps);
+  }
+
+  function showStep(id) {
+    var steps = document.querySelectorAll('.rv-step');
+    for (var i = 0; i < steps.length; i++) steps[i].classList.remove('active');
+    var step = document.getElementById(id);
+    step.classList.add('active');
+    var target = step.querySelector('.rv-question, .rv-result-title, .rv-step-label');
+    if (target) { target.setAttribute('tabindex', '-1'); target.focus(); }
+  }
+
+  function rvGoTo(nextId) {
+    rvHistory.push(currentStepId);
+    currentStepId = nextId;
+    showStep(nextId);
+  }
+
+  window.rvGoBack = function() {
+    if (rvHistory.length === 0) { rvRestart(); return; }
+    var prev = rvHistory.pop();
+    currentStepId = prev;
+    showStep(prev);
+    announce('Tilbake.');
+  };
+
+  function checkBtn(btnId, conditions) {
+    var btn = document.getElementById(btnId);
+    if (!btn) return;
+    var ok = true;
+    for (var i = 0; i < conditions.length; i++) { if (!state[conditions[i]]) ok = false; }
+    btn.disabled = !ok;
+  }
+
+  // Er pasienten bosatt i Norge? Bare bosatte skal se Helfo-alternativet,
+  // fordi Helfo etter folketrygdloven forutsetter medlemskap i folketrygden.
+  function erBosatt() {
+    return state.bosattStatus === 'ja';
+  }
+
+  function innmeldingsLenke() {
+    return '<div class="rv-link-row">' +
+      '<a href="' + innmeldingsUrl + '" target="_blank" class="rv-link-btn">Åpne innmeldingsskjema</a>' +
+      '</div>';
+  }
+
+  function tooLenke() {
+    return '<div class="rv-link-row">' +
+      '<a href="' + tooUrl + '" target="_blank" class="rv-link-btn">Les mer om TOO-tilbudet</a>' +
+      '</div>';
+  }
+
+  function disclaimer() {
+    return '<div class="rv-disclaimer">Dette er et veiledende verktøy for ansatte. Resultatet er ikke et vedtak. Sjekk mot gjeldende regelverk ved tvil, og kontakt fageier hvis du er usikker.</div>';
+  }
+
+  // Helfo-info vises bare til bosatte. Kalles betinget fra resultatgrener.
+  function helfoInfoHvisBosatt() {
+    if (!erBosatt()) return '';
+    return helfoInfo();
+  }
+
+  function helfoInfo() {
+    return '<div class="rv-note">' +
+      '<p><strong>Merk:</strong> Pasienten kan likevel ha rett til stønad fra Helfo etter folketrygdloven § 5-6 ved bestemte tilstander.</p>' +
+      '<button class="rv-helfo-toggle" onclick="document.getElementById(\'rvHelfoList\').classList.toggle(\'open\'); this.textContent = this.textContent === \'Vis tilstander \u25bc\' ? \'Skjul tilstander \u25b2\' : \'Vis tilstander \u25bc\'">Vis tilstander \u25bc</button>' +
+      '<ol id="rvHelfoList" class="rv-helfo-list">' +
+      '<li>Sjelden medisinsk tilstand</li>' +
+      '<li>Leppe-kjeve-ganespalte</li>' +
+      '<li>Svulster i munnhulen, tilgrensende vev eller hoderegionen</li>' +
+      '<li>Infeksjonsforebyggende tannbehandling ved særlige medisinske tilstander</li>' +
+      '<li>Sykdommer og anomalier i munn og kjeve</li>' +
+      '<li>Periodontitt</li>' +
+      '<li>Tannutviklingsforstyrrelser</li>' +
+      '<li>Bittanomalier</li>' +
+      '<li>Patologisk tap av tannsubstans ved attrisjon/erosjon</li>' +
+      '<li>Hyposalivasjon</li>' +
+      '<li>Allergiske reaksjoner mot tannrestaureringsmaterialer</li>' +
+      '<li>Tannskade ved godkjent yrkesskade</li>' +
+      '<li>Tannskade ved ulykke, som ikke er yrkesskade</li>' +
+      '<li>Sterkt nedsatt evne til egenomsorg hos personer med varig sykdom eller nedsatt funksjonsevne</li>' +
+      '<li>Helt eller delvis tanntap, uten egne tenner i underkjeven</li>' +
+      '</ol></div>';
+  }
+
+  window.rvHandleRadio = function(input, key, val) {
+    state[key] = val;
+    var options = input.closest('.rv-options').querySelectorAll('.rv-option');
+    for (var i = 0; i < options.length; i++) options[i].classList.remove('selected');
+    input.closest('.rv-option').classList.add('selected');
+
+    if (key === 'age') checkBtn('rvNext1', ['age']);
+    if (key === 'bosattStatus') checkBtn('rvNextBosatt', ['bosattStatus']);
+    if (key === 'botid') checkBtn('rvNextBotid', ['botid']);
+    if (key === 'ehic') checkBtn('rvNextEHIC', ['ehic']);
+    if (key === 'prc') checkBtn('rvNextPRC', ['prc']);
+    if (key === 'situation') checkBtn('rvNext2', ['situation']);
+    if (key === 'situation2b') { checkBtn('rvNext2b', ['situation2b']); checkBtn('rvNextSituationForeign', ['situation2b']); }
+    if (key === 'insttype') checkBtn('rvNextInstType', ['insttype']);
+    if (key === 'inst') checkBtn('rvNextInstTid', ['inst']);
+    if (key === 'hjem') checkBtn('rvNextHjemType', ['hjem']);
+    if (key === 'hjemfrekvens') checkBtn('rvNextHjemFrekvens', ['hjemfrekvens']);
+    if (key === 'hjemtid') checkBtn('rvNextHjemTid', ['hjemtid']);
+    if (key === 'rus') checkBtn('rvNextRusType', ['rus']);
+    if (key === 'rustid') checkBtn('rvNextRusTid', ['rustid']);
+    if (key === 'fengsel') checkBtn('rvNextFengsel', ['fengsel']);
+  };
+
+  window.rvHandleLand = function(val) {
+    state.land = val;
+    state.erNorge = false;
+    state.exempt = (RV_EXEMPT_LAND.indexOf(val) !== -1);
+    document.getElementById('rvLandAnnetBtn').classList.remove('selected');
+    document.getElementById('rvLandNorgeBtn').classList.remove('selected');
+    document.getElementById('rvNextLand').disabled = (val === '');
+  };
+
+  window.rvSelectNorge = function() {
+    state.land = 'Norge';
+    state.erNorge = true;
+    state.exempt = false;
+    document.getElementById('rvLandSelect').value = '';
+    document.getElementById('rvLandAnnetBtn').classList.remove('selected');
+    document.getElementById('rvLandNorgeBtn').classList.add('selected');
+    document.getElementById('rvNextLand').disabled = false;
+  };
+
+  window.rvSelectAnnetLand = function() {
+    state.land = 'annet';
+    state.erNorge = false;
+    state.exempt = false;
+    document.getElementById('rvLandSelect').value = '';
+    document.getElementById('rvLandNorgeBtn').classList.remove('selected');
+    document.getElementById('rvLandAnnetBtn').classList.add('selected');
+    document.getElementById('rvNextLand').disabled = false;
+  };
+
+  // STEG 1 -> Bosatt (spørres for alle aldersgrupper)
+  window.rvAfterAge = function() {
+    currentStep = 2; totalSteps = 3; updateProgress();
+    rvGoTo('rvStepBosatt');
+    announce('Neste steg.');
+  };
+
+  window.rvAfterBosatt = function() {
+    var b = state.bosattStatus;
+    if (state.age === '0-18') {
+      if (b === 'nei') {
+        currentStep = 3; totalSteps = 5; updateProgress();
+        rvGoTo('rvStepLand'); announce('Neste steg.'); return;
+      }
+      showResultAge018(); return;
+    }
+    if (state.age === '19-28') {
+      currentStep = 3; totalSteps = 5; updateProgress();
+      rvGoTo('rvStepLand'); announce('Neste steg.'); return;
+    }
+    if (state.age === '29+') {
+      if (b === 'nei') { showResultTuristVoksen(); return; }
+      currentStep = 3; totalSteps = 3; updateProgress();
+      rvGoTo('rvStep2'); announce('Neste steg.'); return;
+    }
+  };
+
+  window.rvAfterLand = function() {
+    if (state.age === '0-18') {
+      if (!state.erNorge && state.exempt) { currentStep = 4; totalSteps = 5; updateProgress(); rvGoTo('rvStepEHIC'); announce('Neste steg.'); return; }
+      showResultIngenTurist(); return;
+    }
+    if (state.age === '19-28') {
+      if (state.bosattStatus === 'ja') {
+        if (state.erNorge || state.exempt) { currentStep = 4; totalSteps = 4; updateProgress(); rvGoTo('rvStep2b'); announce('Neste steg.'); return; }
+        currentStep = 4; totalSteps = 5; updateProgress(); rvGoTo('rvStepBotid'); announce('Neste steg.'); return;
+      }
+      if (!state.erNorge && state.exempt) { currentStep = 4; totalSteps = 5; updateProgress(); rvGoTo('rvStepEHIC'); announce('Neste steg.'); return; }
+      showResultIngenTurist(); return;
+    }
+  };
+
+  window.rvAfterBotid = function() {
+    currentStep = 5; totalSteps = 5; updateProgress();
+    if (state.botid === 'ja') { rvGoTo('rvStep2b'); }
+    else { rvGoTo('rvStep2bForeign'); }
+    announce('Neste steg.');
+  };
+
+  window.rvAfterEHIC = function() {
+    if (state.ehic === 'ja') { showResultTuristKort(); return; }
+    currentStep = 5; totalSteps = 5; updateProgress();
+    rvGoTo('rvStepPRC'); announce('Neste steg.');
+  };
+
+  window.rvAfterPRC = function() {
+    if (state.prc === 'ja') { showResultTuristKort(); return; }
+    showResultIngenDokumentasjon();
+  };
+
+  function showResultHTML(iconClass, iconSymbol, title, bodyHTML) {
+    document.getElementById('rvResultContent').innerHTML =
+      '<div class="rv-result-header">' +
+      '<div class="rv-result-icon ' + iconClass + '" aria-hidden="true">' + iconSymbol + '</div>' +
+      '<div class="rv-result-title">' + title + '</div></div>' +
+      '<div class="rv-result-body">' + bodyHTML + disclaimer() + '</div>';
+    showStep('rvStepResult');
+    announce('Resultatet er klart.');
+  }
+
+  function showResultAge018() {
+    showResultHTML('green', '\u2713', 'Pasienten har rett til gratis tannbehandling',
+      '<p>Barn og ungdom har rett til gratis tannbehandling ut året de fyller 18 år. Dette gjelder all behandling, unntatt tannregulering.</p>' +
+      '<div class="rv-result-section">' +
+      '<p>Pasienten kalles inn til tannkontroll jevnlig. Kontrollene starter som regel det året barnet fyller 3 år.</p>' +
+      '<p>Hvor ofte pasienten blir kalt inn avhenger av tannhelsen. For de med god tannhelse er det vanlig med kontroll hver 24. måned.</p>' +
+      '<p>Før barnet fyller 3 år følges tannhelsen opp av helsesykepleier på helsestasjonen.</p></div>'
+    );
+  }
+
+  function showResult1928Standard() {
+    showResultHTML('green', '\u2713', 'Pasienten har rett til rabattert tannbehandling',
+      '<p>Fra og med 1. januar det året pasienten fyller 19 år betales det for tannbehandling. Rabattordningen gjelder til og med det året pasienten fyller 28 år.</p>' +
+      '<div class="rv-result-section"><p><strong>Pasienten betaler 25 % av offentlige takster</strong>, fastsatt av Helse- og omsorgsdepartementet.</p></div>' +
+      '<div class="rv-note">Tilbudet gjelder bare hos offentlige tannklinikker. Behandling hos private tannleger og tannpleiere dekkes ikke.</div>'
+    );
+  }
+
+  function showResultNoRights() {
+    showResultHTML('gray', '\u2013', 'Pasienten har ikke rett til gratis eller rabattert tannbehandling',
+      '<p>Basert på svarene har pasienten ikke rett til gratis eller rabattert tannbehandling i den offentlige tannhelsetjenesten.</p>' +
+      '<p>Pasienten må selv kontakte tannlege og betale for behandlingen.</p>' +
+      helfoInfoHvisBosatt()
+    );
+  }
+
+  function showResultUtviklingshemming() {
+    showResultHTML('green', '\u2713', 'Pasienten har rett til gratis tannbehandling',
+      '<p>Pasienten har rett til gratis tannbehandling hos den offentlige tannhelsetjenesten.</p>' +
+      '<div class="rv-result-section">' +
+      '<p>Diagnosen må være bekreftet av fastlege eller psykiater.</p>' +
+      '<p>Diagnosen må være registrert som <strong>F70–F79</strong> etter ICD-10-systemet eller <strong>P85</strong> etter ICPC-2.</p></div>' +
+      '<div class="rv-note">Andre diagnoser gir ikke rett til gratis tannbehandling gjennom denne ordningen.</div>' +
+      innmeldingsLenke()
+    );
+  }
+
+  function showResultAngst() {
+    showResultHTML('green', '\u2713', 'Pasienten kan få tilrettelagt tannbehandling (TOO)',
+      '<p>Pasienten kan få tilrettelagt tannbehandling gjennom TOO-tilbudet. Dette gjelder ved alvorlig tannbehandlingsangst knyttet til:</p>' +
+      '<div class="rv-result-section"><p>Tortur</p><p>Overgrep</p><p>Odontofobi (sterk tannbehandlingsskrekk)</p></div>' +
+      '<p>Pasienten kan ta kontakt selv eller få henvisning fra tannlege, tannpleier, lege eller psykolog.</p>' +
+      tooLenke()
+    );
+  }
+
+  function showResultTuristVoksen() {
+    showResultHTML('gray', '\u2013', 'Pasienten har ikke rett til gratis tannbehandling',
+      '<p>Voksne pasienter som ikke er bosatt i Norge må betale for all tannbehandling selv.</p>'
+    );
+  }
+
+  function showResultIngenTurist() {
+    showResultHTML('gray', '\u2013', 'Pasienten har ikke rett til gratis eller rabattert tannbehandling',
+      '<p>Pasienten er ikke bosatt i Norge og kommer fra et land uten avtale om gjensidige helsetjenester.</p>' +
+      '<p>Pasienten må selv kontakte tannlege og betale for behandlingen.</p>'
+    );
+  }
+
+  function showResultTuristKort() {
+    if (state.age === '0-18') {
+      showResultHTML('green', '\u2713', 'Pasienten har rett til gratis tannbehandling',
+        '<p>Barn og unge 0–18 år fra EU/EØS, Storbritannia, Sveits eller et av unntakslandene har rett til gratis nødvendig tannbehandling ved fremvisning av gyldig EHIC, GHIC eller PRC.</p>' +
+        '<div class="rv-note">Andre turister må betale for behandlingen selv.</div>'
+      );
+    } else {
+      showResultHTML('green', '\u2713', 'Pasienten har rett til rabattert tannbehandling',
+        '<p>Unge voksne 19–28 år fra EU/EØS, Storbritannia, Sveits eller et av unntakslandene betaler 25 % av offentlige takster ved fremvisning av gyldig EHIC, GHIC eller PRC.</p>' +
+        '<div class="rv-note">Andre turister må betale for behandlingen selv.</div>'
+      );
+    }
+  }
+
+  function showResultIngenDokumentasjon() {
+    showResultHTML('gray', '\u2013', 'Pasienten har ikke rett til gratis eller rabattert tannbehandling',
+      '<p>Uten gyldig EHIC, GHIC eller PRC må pasienten selv kontakte tannlege og betale for behandlingen, inkludert eventuelle tolkeutgifter.</p>' +
+      '<p>Vi anbefaler at pasienten kontakter trygdemyndighetene i sitt hjemland for å undersøke muligheten for refusjon ved hjemkomst. Be pasienten ta vare på spesifisert kvittering.</p>'
+    );
+  }
+
+  window.rvAfterSituation = function() {
+    currentStep = currentStep + 1; updateProgress();
+    var s = state.situation;
+    if (s === 'ingen') { showResultNoRights(); return; }
+    if (s === 'institusjon') { rvGoTo('rvStepInstType'); return; }
+    if (s === 'hjemmesykepleie') { rvGoTo('rvStepHjemType'); return; }
+    if (s === 'utviklingshemming') { showResultUtviklingshemming(); return; }
+    if (s === 'rus') { rvGoTo('rvStepRusType'); return; }
+    if (s === 'fengsel') { rvGoTo('rvStepFengsel'); return; }
+    if (s === 'angst') { showResultAngst(); return; }
+  };
+
+  window.rvAfterSituation2b = function() {
+    currentStep = currentStep + 1; updateProgress();
+    var s2 = state.situation2b;
+    if (s2 === 'ingen') { showResult1928Standard(); return; }
+    if (s2 === 'institusjon') { rvGoTo('rvStepInstType'); return; }
+    if (s2 === 'hjemmesykepleie') { rvGoTo('rvStepHjemType'); return; }
+    if (s2 === 'utviklingshemming') { showResultUtviklingshemming(); return; }
+    if (s2 === 'rus') { rvGoTo('rvStepRusType'); return; }
+    if (s2 === 'fengsel') { rvGoTo('rvStepFengsel'); return; }
+    if (s2 === 'angst') { showResultAngst(); return; }
+  };
+
+  window.rvAfterSituationForeign = function() {
+    currentStep = currentStep + 1; updateProgress();
+    var s = state.situation2b;
+    if (s === 'ingen') { showResultNoRights(); return; }
+    if (s === 'institusjon') { rvGoTo('rvStepInstType'); return; }
+    if (s === 'hjemmesykepleie') { rvGoTo('rvStepHjemType'); return; }
+    if (s === 'utviklingshemming') { showResultUtviklingshemming(); return; }
+    if (s === 'rus') { rvGoTo('rvStepRusType'); return; }
+    if (s === 'fengsel') { rvGoTo('rvStepFengsel'); return; }
+    if (s === 'angst') { showResultAngst(); return; }
+  };
+
+  // Institusjon, trinn 1: type. Privat uten avtale avslutter grenen.
+  window.rvAfterInstType = function() {
+    if (state.insttype === 'privat') {
+      showResultHTML('gray', '\u2013', 'Pasienten har ikke rett til gratis tannbehandling',
+        '<p>Pasienter på private institusjoner uten avtale med kommunen eller helseforetaket har ikke rett til gratis tannbehandling.</p>' +
+        '<div class="rv-note">Er du i tvil om institusjonen har avtale, kontakt institusjonen og spør om de har avtale med kommunen eller helseforetaket.</div>' +
+        helfoInfoHvisBosatt()
+      );
+      return;
+    }
+    currentStep = currentStep + 1; updateProgress();
+    rvGoTo('rvStepInstTid'); announce('Neste steg.');
+  };
+
+  // Hjemmesykepleie, trinn 1: type. Bare praktisk bistand avslutter grenen.
+  window.rvAfterHjemType = function() {
+    if (state.hjem === 'praktisk') {
+      showResultHTML('gray', '\u2013', 'Pasienten har ikke rett til gratis tannbehandling gjennom denne ordningen',
+        '<p>Praktisk bistand som matlaging, hjelp til å dusje, handle eller følge til avtaler regnes ikke som hjemmesykepleie.</p>' +
+        '<p>Hjemmesykepleie er helsetjenester som sårbehandling, medisinhåndtering og psykiatrisk sykepleie.</p>' +
+        helfoInfoHvisBosatt()
+      );
+      return;
+    }
+    currentStep = currentStep + 1; updateProgress();
+    rvGoTo('rvStepHjemFrekvens'); announce('Neste steg.');
+  };
+
+  // Hjemmesykepleie, trinn 2: frekvens. Sjeldnere enn ukentlig avslutter grenen.
+  window.rvAfterHjemFrekvens = function() {
+    if (state.hjemfrekvens === 'sjeldnere') {
+      showResultHTML('gray', '\u2013', 'Pasienten oppfyller trolig ikke kravene',
+        '<p>For å ha rett til gratis tannbehandling gjennom denne ordningen må pasienten motta hjemmesykepleie ukentlig eller oftere.</p>' +
+        '<p>Kontakt kommunen for å avklare.</p>' +
+        helfoInfoHvisBosatt()
+      );
+      return;
+    }
+    currentStep = currentStep + 1; updateProgress();
+    rvGoTo('rvStepHjemTid'); announce('Neste steg.');
+  };
+
+  // Rus, trinn 1: type tjeneste. Annet avslutter grenen uten å sjekke varighet.
+  window.rvAfterRusType = function() {
+    var riktig = (state.rus === 'lar' || state.rus === 'avlastning' || state.rus === 'assistanse');
+    if (!riktig) {
+      showResultHTML('gray', '\u2013', 'Pasienten oppfyller trolig ikke vilkårene',
+        '<p>Basert på svarene ser det ut til at pasienten ikke oppfyller vilkårene for gratis tannbehandling gjennom denne ordningen.</p>' +
+        '<div class="rv-note">Kontakt ruskontakten for å avklare. De kan hjelpe med å finne ut om pasienten har rettigheter.</div>' +
+        helfoInfoHvisBosatt()
+      );
+      return;
+    }
+    currentStep = currentStep + 1; updateProgress();
+    rvGoTo('rvStepRusTid'); announce('Neste steg.');
+  };
+
+  window.rvShowResult = function() {
+    var sit = state.situation || state.situation2b;
+
+    if (sit === 'institusjon') {
+      if (state.inst === 'over3') {
+        showResultHTML('green', '\u2713', 'Pasienten har rett til gratis tannbehandling',
+          '<p>Pasienten har rett til gratis tannbehandling hos den offentlige tannhelsetjenesten.</p>' +
+          '<div class="rv-result-section"><p>Tilbudet gjelder nødvendig tannbehandling som gjør at pasienten kan tygge maten, snakke tydelig og være sammen med andre uten ubehag fra tennene.</p></div>' +
+          innmeldingsLenke()
+        );
+      } else if (state.inst === 'under3ment') {
+        showResultHTML('yellow', '!', 'Pasienten har rett til akutt tannbehandling',
+          '<p>Pasienten har bodd i institusjonen i under tre måneder, men oppholdet er ment å vare lenger. Pasienten har derfor rett til akutt tannbehandling i denne perioden.</p>' +
+          '<div class="rv-result-section"><p>Etter tre måneder får pasienten rett til nødvendig gratis tannbehandling.</p></div>' +
+          innmeldingsLenke()
+        );
+      } else {
+        showResultHTML('gray', '\u2013', 'Pasienten har ikke rett til gratis tannbehandling',
+          '<p>Oppholdet er ment å vare under tre måneder. Pasienten har derfor ikke rett til gratis tannbehandling gjennom denne ordningen.</p>' +
+          helfoInfoHvisBosatt()
+        );
+      }
+    }
+
+    else if (sit === 'hjemmesykepleie') {
+      if (state.hjemtid === 'over3') {
+        showResultHTML('green', '\u2713', 'Pasienten har rett til gratis tannbehandling',
+          '<p>Pasienten har rett til gratis tannbehandling fra den offentlige tannhelsetjenesten.</p>' +
+          '<div class="rv-result-section"><p>Kommunen har ansvar for å informere pasienten om tilbudet og kontakte tannhelsetjenesten.</p></div>' +
+          innmeldingsLenke()
+        );
+      } else if (state.hjemtid === 'under3ment') {
+        showResultHTML('yellow', '!', 'Pasienten har rett til akutt tannbehandling',
+          '<p>Pasienten har mottatt hjemmesykepleie i under tre måneder, men det er ment å vare lenger. Pasienten har derfor rett til akutt tannbehandling i denne perioden.</p>' +
+          '<div class="rv-result-section"><p>Etter tre måneder med ukentlig hjemmesykepleie får pasienten rett til nødvendig gratis tannbehandling.</p></div>' +
+          innmeldingsLenke()
+        );
+      } else {
+        showResultHTML('gray', '\u2013', 'Pasienten har ikke rett til gratis tannbehandling ennå',
+          '<p>Hjemmesykepleien er ment å vare under tre måneder. Pasienten har derfor ikke rett til gratis tannbehandling gjennom denne ordningen.</p>' +
+          helfoInfoHvisBosatt()
+        );
+      }
+    }
+
+    else if (sit === 'rus') {
+      if (state.rustid === 'over3') {
+        showResultHTML('green', '\u2713', 'Pasienten har rett til gratis tannbehandling',
+          '<p>Pasienten har rett til gratis tannbehandling fra den offentlige tannhelsetjenesten.</p>' +
+          '<div class="rv-result-section"><p>Tilbudet gjelder nødvendig tannbehandling som gjør at pasienten kan spise, snakke og være sammen med andre uten problemer fra tennene.</p></div>' +
+          innmeldingsLenke()
+        );
+      } else if (state.rustid === 'under3ment') {
+        showResultHTML('yellow', '!', 'Pasienten har rett til akutt tannbehandling',
+          '<p>Pasienten har mottatt tjenesten i under tre måneder, men den er ment å vare lenger. Pasienten har derfor rett til akutt tannbehandling i denne perioden.</p>' +
+          '<div class="rv-result-section"><p>Etter tre sammenhengende måneder får pasienten rett til nødvendig gratis tannbehandling.</p></div>' +
+          innmeldingsLenke()
+        );
+      } else {
+        showResultHTML('gray', '\u2013', 'Pasienten har ikke rett til gratis tannbehandling ennå',
+          '<p>Tjenesten er ment å vare under tre måneder. Pasienten har derfor ikke rett til gratis tannbehandling gjennom denne ordningen.</p>' +
+          '<div class="rv-note">Kontakt ruskontakten for å avklare. Situasjonen kan endre seg.</div>' +
+          helfoInfoHvisBosatt()
+        );
+      }
+    }
+
+    else if (sit === 'fengsel') {
+      if (state.fengsel === 'over3') {
+        showResultHTML('green', '\u2713', 'Pasienten har rett til gratis tannbehandling',
+          '<p>Innsatte som soner mer enn tre måneder får tilbud om nødvendig gratis tannbehandling. Gjelder i fengsel og overgangsbolig.</p>' +
+          '<p>Pasienten har også alltid rett til akutt tannbehandling.</p>'
+        );
+      } else if (state.fengsel === 'under3') {
+        showResultHTML('yellow', '!', 'Pasienten har rett til akutt tannbehandling',
+          '<p>Pasienten soner under tre måneder og har rett til akutt tannbehandling gjennom hele soningen.</p>' +
+          '<div class="rv-note">Nødvendig gratis tannbehandling gjelder først ved soning over tre måneder.</div>'
+        );
+      } else {
+        showResultHTML('gray', '\u2013', 'Pasienten har ikke rett til gratis tannbehandling',
+          '<p>Hjemmesoning gir ikke rett til gratis tannbehandling.</p>' +
+          helfoInfoHvisBosatt()
+        );
+      }
+    }
+  };
+
+  window.rvRestart = function() {
+    state = {};
+    currentStep = 1;
+    totalSteps = 2;
+    rvHistory = [];
+    currentStepId = 'rvStep1';
+    updateProgress();
+    var opts = document.querySelectorAll('.rv-option');
+    for (var i = 0; i < opts.length; i++) opts[i].classList.remove('selected');
+    var radios = document.querySelectorAll('.rv-wizard input[type="radio"]');
+    for (var i = 0; i < radios.length; i++) radios[i].checked = false;
+    var landSelect = document.getElementById('rvLandSelect');
+    if (landSelect) landSelect.value = '';
+    var landAnnetBtn = document.getElementById('rvLandAnnetBtn');
+    if (landAnnetBtn) landAnnetBtn.classList.remove('selected');
+    var landNorgeBtn = document.getElementById('rvLandNorgeBtn');
+    if (landNorgeBtn) landNorgeBtn.classList.remove('selected');
+    var btns = ['rvNext1','rvNextBosatt','rvNextLand','rvNextBotid','rvNextEHIC','rvNextPRC','rvNext2','rvNext2b','rvNextSituationForeign','rvNextInstType','rvNextInstTid','rvNextHjemType','rvNextHjemFrekvens','rvNextHjemTid','rvNextRusType','rvNextRusTid','rvNextFengsel'];
+    for (var i = 0; i < btns.length; i++) { var b = document.getElementById(btns[i]); if (b) b.disabled = true; }
+    showStep('rvStep1');
+    announce('Veiviseren er nullstilt. Steg 1.');
+  };
+
+  updateProgress();
+})();
+</script>
+</body>
+</html>
